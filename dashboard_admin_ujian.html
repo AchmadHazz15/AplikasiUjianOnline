@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - CBT Anti-Cheating System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #1f2937; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 flex h-screen overflow-hidden">
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col justify-between shrink-0">
+        <div>
+            <!-- Logo Header -->
+            <div class="p-6 border-b border-gray-700 flex items-center space-x-3">
+                <div class="bg-red-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-shield-halved text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight">ProctorGuard</h1>
+                    <span class="text-xs text-red-400 font-semibold tracking-wider uppercase">CBT Admin Control</span>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="mt-6 px-4 space-y-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition bg-red-600/20 text-red-400 border border-red-500/30">
+                    <i class="fa-solid fa-chart-pie text-lg w-6"></i>
+                    <span>Overview & Analitik</span>
+                </button>
+                <button onclick="switchTab('students')" id="nav-students" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 transition">
+                    <i class="fa-solid fa-users-gear text-lg w-6"></i>
+                    <span>Siswa & Kelas</span>
+                </button>
+                <button onclick="switchTab('monitoring')" id="nav-monitoring" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 transition">
+                    <i class="fa-solid fa-video text-lg w-6"></i>
+                    <span>Live Monitoring</span>
+                    <span class="ml-auto bg-red-600 text-white text-xs px-2 py-0.5 rounded-full font-bold animate-pulse">4 Live</span>
+                </button>
+                <button onclick="switchTab('exams')" id="nav-exams" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 transition">
+                    <i class="fa-solid fa-file-pen text-lg w-6"></i>
+                    <span>Bank Soal & Ujian</span>
+                </button>
+                <button onclick="switchTab('reports')" id="nav-reports" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 transition">
+                    <i class="fa-solid fa-clipboard-check text-lg w-6"></i>
+                    <span>Rekap & Laporan</span>
+                </button>
+                <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 transition">
+                    <i class="fa-solid fa-sliders text-lg w-6"></i>
+                    <span>Pengaturan Anti-Cheat</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Admin Profile Footer -->
+        <div class="p-4 border-t border-gray-700 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-full bg-gray-600 flex items-center justify-center text-sm font-bold">
+                    AD
+                </div>
+                <div>
+                    <div class="text-sm font-semibold">Administrator</div>
+                    <div class="text-xs text-gray-400">admin@sekolah.sch.id</div>
+                </div>
+            </div>
+            <button title="Keluar" class="text-gray-400 hover:text-red-400 transition">
+                <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+        
+        <!-- TOPBAR -->
+        <header class="bg-gray-800 border-b border-gray-700 px-8 py-4 flex items-center justify-between shrink-0">
+            <div>
+                <h2 id="page-title" class="text-xl font-bold text-white">Overview & Analitik Ujian</h2>
+                <p id="page-subtitle" class="text-xs text-gray-400">Pemantauan real-time status integritas dan jalannya tes.</p>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-700 text-xs">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span class="text-gray-300 font-medium">Server Status: Online</span>
+                </div>
+                <div class="bg-gray-700 h-6 w-px"></div>
+                <span id="current-time-clock" class="text-xs font-mono text-gray-400 bg-gray-900 px-3 py-1.5 rounded-lg border border-gray-700">10:52:09 WIB</span>
+            </div>
+        </header>
+
+        <!-- CONTAINER UNTUK TIAP TAB TAB -->
+        <main class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+
+            <!-- TAB 1: OVERVIEW & DASHBOARD -->
+            <div id="tab-dashboard" class="tab-content space-y-6">
+                <!-- Stat Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Total Siswa Terdaftar</p>
+                            <h3 class="text-2xl font-bold mt-1 text-white" id="stat-total-students">120</h3>
+                            <span class="text-xs text-emerald-400 flex items-center mt-1"><i class="fa-solid fa-arrow-up mr-1"></i> 5 Kelas Aktif</span>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-600/10 text-blue-500 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-user-graduate"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Sedang Ujian (Active)</p>
+                            <h3 class="text-2xl font-bold mt-1 text-emerald-400">4</h3>
+                            <span class="text-xs text-emerald-400 flex items-center mt-1"><i class="fa-solid fa-check mr-1"></i> Live Stream Safe</span>
+                        </div>
+                        <div class="w-12 h-12 bg-emerald-600/10 text-emerald-500 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-desktop"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Total Pelanggaran</p>
+                            <h3 class="text-2xl font-bold mt-1 text-red-500">8 Log</h3>
+                            <span class="text-xs text-red-400 flex items-center mt-1"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Tab Switch & Face Detect</span>
+                        </div>
+                        <div class="w-12 h-12 bg-red-600/10 text-red-500 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-shield-alert"></i>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 rounded-2xl p-5 border border-gray-700 shadow-sm flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-400">Rata-Rata Kejujuran</p>
+                            <h3 class="text-2xl font-bold mt-1 text-amber-400">94.2%</h3>
+                            <span class="text-xs text-amber-400 flex items-center mt-1"><i class="fa-solid fa-star mr-1"></i> Tingkat Integritas Tinggi</span>
+                        </div>
+                        <div class="w-12 h-12 bg-amber-600/10 text-amber-500 rounded-xl flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-award"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-gray-800 rounded-2xl p-6 border border-gray-700">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-gray-200">Distribusi Nilai Siswa</h3>
+                            <span class="text-xs bg-gray-700 text-gray-300 px-3 py-1 rounded-full">Ujian: Matematika Wajib - XII IPA</span>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="scoreChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700">
+                        <h3 class="font-bold text-gray-200 mb-4">Jenis Pelanggaran Terdeteksi</h3>
+                        <div class="h-64 flex justify-center items-center">
+                            <canvas id="violationChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: SISWA & KELAS (MANAJEMEN DATA SISWA TERGABUNG) -->
+            <div id="tab-students" class="tab-content hidden space-y-6">
+                <!-- Sub Navigation & Top Controls -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-gray-800 p-4 rounded-2xl border border-gray-700">
+                    <div class="flex space-x-2">
+                        <button onclick="switchStudentSubTab('list')" id="btn-sub-student-list" class="px-4 py-2 rounded-xl text-sm font-semibold bg-red-600 text-white transition">Data Siswa</button>
+                        <button onclick="switchStudentSubTab('classes')" id="btn-sub-classes" class="px-4 py-2 rounded-xl text-sm font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition">Data Kelas & Jurusan</button>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button onclick="openModal('modal-import-student')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+                            <i class="fa-solid fa-file-excel"></i>
+                            <span>Import CSV/Excel</span>
+                        </button>
+                        <button onclick="openModal('modal-add-student')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+                            <i class="fa-solid fa-user-plus"></i>
+                            <span>Tambah Siswa</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SUB TAB: DATA SISWA TABLE -->
+                <div id="student-subtab-list" class="space-y-4">
+                    <!-- Filter & Search Bar -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="md:col-span-2 relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" id="search-student" onkeyup="filterStudents()" placeholder="Cari berdasarkan nama atau NISN..." class="w-full bg-gray-800 border border-gray-700 rounded-xl pl-10 pr-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                        </div>
+                        <div>
+                            <select id="filter-class" onchange="filterStudents()" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                                <option value="ALL">Semua Kelas</option>
+                                <option value="XII IPA 1">X DKV</option>
+                                <option value="XII IPA 2">X TP 1</option>
+                                <option value="XII IPS 1">X TP 2</option>
+                                <option value="XII IPA 1">XI DKV</option>
+                                <option value="XII IPA 2">XI TP 1</option>
+                                <option value="XII IPS 1">XI TP 2</option>
+                                <option value="XII IPA 1">XII DKV</option>
+                                <option value="XII IPA 2">XII TP 1</option>
+                                <option value="XII IPS 1">XII TP 2</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select id="filter-status" onchange="filterStudents()" class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                                <option value="ALL">Semua Status</option>
+                                <option value="Aktif">Aktif</option>
+                                <option value="Nonaktif">Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Student Table -->
+                    <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-lg">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm text-gray-300">
+                                <thead class="bg-gray-900 text-xs font-semibold uppercase tracking-wider text-gray-400 border-b border-gray-700">
+                                    <tr>
+                                        <th class="px-6 py-4">Siswa</th>
+                                        <th class="px-6 py-4">NISN / ID</th>
+                                        <th class="px-6 py-4">Kelas</th>
+                                        <th class="px-6 py-4">Username</th>
+                                        <th class="px-6 py-4">Status</th>
+                                        <th class="px-6 py-4 text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="student-table-body" class="divide-y divide-gray-700/50">
+                                    <!-- Populated dynamically via JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUB TAB: DATA KELAS -->
+                <div id="student-subtab-classes" class="hidden space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-200">Daftar Kelas Terdaftar</h3>
+                        <button onclick="openModal('modal-add-class')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+                            <i class="fa-solid fa-folder-plus"></i>
+                            <span>Tambah Kelas Baru</span>
+                        </button>
+                    </div>
+
+                    <div id="class-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Populated dynamically via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: LIVE MONITORING -->
+            <div id="tab-monitoring" class="tab-content hidden space-y-6">
+                <!-- Filter Monitoring -->
+                <div class="flex justify-between items-center bg-gray-800 p-4 rounded-xl border border-gray-700">
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm font-medium text-gray-300">Filter Status:</span>
+                        <select class="bg-gray-900 border border-gray-700 rounded-lg px-3 py-1.5 text-xs text-gray-200">
+                            <option>Semua Siswa (4)</option>
+                            <option>Tergolong Pelanggaran (1)</option>
+                            <option>Normal (3)</option>
+                        </select>
+                    </div>
+                    <div class="text-xs text-gray-400">
+                        <i class="fa-solid fa-arrows-rotate mr-1"></i> Syncing webcam feed (1s)
+                    </div>
+                </div>
+
+                <!-- Live Grid Video Webcams -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Student 1 (Normal) -->
+                    <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-sm flex flex-col">
+                        <div class="relative bg-black aspect-video flex items-center justify-center">
+                            <div class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase flex items-center">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-ping"></span> Live
+                            </div>
+                            <div class="absolute top-3 right-3 bg-black/60 text-emerald-400 text-xs px-2 py-0.5 rounded font-mono">
+                                98% Safe
+                            </div>
+                            <!-- Simulation Video Feed Avatar -->
+                            <div class="text-center">
+                                <div class="w-16 h-16 rounded-full bg-gray-700 border-2 border-emerald-500 mx-auto flex items-center justify-center text-xl font-bold">
+                                    AP
+                                </div>
+                                <span class="text-[10px] text-gray-400 mt-1 block">Camera Stream Active</span>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-bold text-sm text-gray-100">Ahmad Rizky Pratama</h4>
+                                    <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">XII IPA 1</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Soal Dijawab: <span class="text-gray-200 font-semibold">18 / 25</span></p>
+                            </div>
+                            <div class="bg-gray-900 p-2 rounded-lg border border-gray-700/50">
+                                <div class="text-[11px] text-gray-400">Status Peringatan:</div>
+                                <div class="flex items-center space-x-1 mt-1">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="text-xs text-gray-400 ml-2 font-mono">0 Strike</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="alert('Kirim teguran ke Ahmad')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-xs py-2 rounded-lg font-medium text-gray-200 transition">Tegur</button>
+                                <button onclick="alert('Ujian dihentikan untuk Ahmad')" class="bg-red-600/20 text-red-400 hover:bg-red-600/30 text-xs px-3 py-2 rounded-lg font-medium transition">Force Submit</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student 2 (Violating Warning) -->
+                    <div class="bg-gray-800 rounded-2xl border-2 border-red-500/80 overflow-hidden shadow-lg flex flex-col animate-pulse">
+                        <div class="relative bg-black aspect-video flex items-center justify-center">
+                            <div class="absolute top-3 left-3 bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase flex items-center">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-ping"></span> WARNING
+                            </div>
+                            <div class="absolute top-3 right-3 bg-red-950 text-red-400 text-xs px-2 py-0.5 rounded font-mono font-bold">
+                                45% Risk
+                            </div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 rounded-full bg-red-900/50 border-2 border-red-500 mx-auto flex items-center justify-center text-xl font-bold text-red-300">
+                                    BS
+                                </div>
+                                <span class="text-[10px] text-red-400 mt-1 block font-semibold">Face Out Of Frame</span>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-bold text-sm text-gray-100">Budi Santoso</h4>
+                                    <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">XII IPA 2</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Soal Dijawab: <span class="text-gray-200 font-semibold">12 / 25</span></p>
+                            </div>
+                            <div class="bg-red-950/30 p-2 rounded-lg border border-red-800/50">
+                                <div class="text-[11px] text-red-300 font-semibold">Status Peringatan:</div>
+                                <div class="flex items-center space-x-1 mt-1">
+                                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="text-xs text-red-400 ml-2 font-mono font-bold">2 Strikes</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="alert('Pesan peringatan khusus dikirim')" class="flex-1 bg-red-600 hover:bg-red-700 text-xs py-2 rounded-lg font-medium text-white transition">Kirim Peringatan</button>
+                                <button onclick="alert('Keluarkann siswa')" class="bg-red-600 text-white hover:bg-red-700 text-xs px-3 py-2 rounded-lg font-medium transition">Diskualifikasi</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student 3 (Normal) -->
+                    <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-sm flex flex-col">
+                        <div class="relative bg-black aspect-video flex items-center justify-center">
+                            <div class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase flex items-center">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-ping"></span> Live
+                            </div>
+                            <div class="absolute top-3 right-3 bg-black/60 text-emerald-400 text-xs px-2 py-0.5 rounded font-mono">
+                                100% Safe
+                            </div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 rounded-full bg-gray-700 border-2 border-emerald-500 mx-auto flex items-center justify-center text-xl font-bold">
+                                    CL
+                                </div>
+                                <span class="text-[10px] text-gray-400 mt-1 block">Camera Stream Active</span>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-bold text-sm text-gray-100">Citra Lestari</h4>
+                                    <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">X DKV</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Soal Dijawab: <span class="text-gray-200 font-semibold">22 / 25</span></p>
+                            </div>
+                            <div class="bg-gray-900 p-2 rounded-lg border border-gray-700/50">
+                                <div class="text-[11px] text-gray-400">Status Peringatan:</div>
+                                <div class="flex items-center space-x-1 mt-1">
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="text-xs text-gray-400 ml-2 font-mono">0 Strike</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-xs py-2 rounded-lg font-medium text-gray-200 transition">Tegur</button>
+                                <button class="bg-red-600/20 text-red-400 hover:bg-red-600/30 text-xs px-3 py-2 rounded-lg font-medium transition">Force Submit</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Student 4 (Normal) -->
+                    <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden shadow-sm flex flex-col">
+                        <div class="relative bg-black aspect-video flex items-center justify-center">
+                            <div class="absolute top-3 left-3 bg-emerald-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase flex items-center">
+                                <span class="w-1.5 h-1.5 rounded-full bg-white mr-1.5 animate-ping"></span> Live
+                            </div>
+                            <div class="absolute top-3 right-3 bg-black/60 text-emerald-400 text-xs px-2 py-0.5 rounded font-mono">
+                                95% Safe
+                            </div>
+                            <div class="text-center">
+                                <div class="w-16 h-16 rounded-full bg-gray-700 border-2 border-emerald-500 mx-auto flex items-center justify-center text-xl font-bold">
+                                    DW
+                                </div>
+                                <span class="text-[10px] text-gray-400 mt-1 block">Camera Stream Active</span>
+                            </div>
+                        </div>
+                        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                                <div class="flex justify-between items-start">
+                                    <h4 class="font-bold text-sm text-gray-100">Dwi Cahyono</h4>
+                                    <span class="text-xs bg-gray-700 text-gray-300 px-2 py-0.5 rounded">X DKV</span>
+                                </div>
+                                <p class="text-xs text-gray-400 mt-1">Soal Dijawab: <span class="text-gray-200 font-semibold">15 / 25</span></p>
+                            </div>
+                            <div class="bg-gray-900 p-2 rounded-lg border border-gray-700/50">
+                                <div class="text-[11px] text-gray-400">Status Peringatan:</div>
+                                <div class="flex items-center space-x-1 mt-1">
+                                    <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="w-3 h-3 rounded-full bg-gray-700"></span>
+                                    <span class="text-xs text-gray-400 ml-2 font-mono">1 Strike</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button class="flex-1 bg-gray-700 hover:bg-gray-600 text-xs py-2 rounded-lg font-medium text-gray-200 transition">Tegur</button>
+                                <button class="bg-red-600/20 text-red-400 hover:bg-red-600/30 text-xs px-3 py-2 rounded-lg font-medium transition">Force Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: BANK SOAL & UJIAN -->
+            <div id="tab-exams" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-200">Daftar Sesi Ujian</h3>
+                    <button class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>Buat Ujian Baru</span>
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-emerald-600/20 text-emerald-400 text-xs px-2.5 py-1 rounded-md font-semibold">Aktif Berjalan</span>
+                                <h4 class="text-lg font-bold text-white mt-2">Ujian Akhir Semester Matematika</h4>
+                                <p class="text-xs text-gray-400">Kelas X DKV dan X TP 1 dan 2 | Durasi 90 Menit</p>
+                            </div>
+                            <div class="bg-gray-900 px-3 py-2 rounded-xl text-center border border-gray-700">
+                                <span class="text-[10px] text-gray-400 block uppercase">Token</span>
+                                <span class="text-sm font-mono font-bold text-amber-400">MATH2026</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-700 pt-3 flex justify-between items-center text-xs text-gray-400">
+                            <span><i class="fa-solid fa-file-lines mr-1"></i> 25 Soal Pilihan Ganda</span>
+                            <span><i class="fa-solid fa-user mr-1"></i> 120 Peserta</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-gray-700 text-gray-300 text-xs px-2.5 py-1 rounded-md font-semibold">Mendatang</span>
+                                <h4 class="text-lg font-bold text-white mt-2">Ujian Penilaian Fisika Quantum</h4>
+                                <p class="text-xs text-gray-400">Kelas X DKV dan X TP 1 dan 2 | Durasi 60 Menit</p>
+                            </div>
+                            <div class="bg-gray-900 px-3 py-2 rounded-xl text-center border border-gray-700">
+                                <span class="text-[10px] text-gray-400 block uppercase">Token</span>
+                                <span class="text-sm font-mono font-bold text-amber-400">PHYS99</span>
+                            </div>
+                        </div>
+                        <div class="border-t border-gray-700 pt-3 flex justify-between items-center text-xs text-gray-400">
+                            <span><i class="fa-solid fa-file-lines mr-1"></i> 20 Soal</span>
+                            <span><i class="fa-solid fa-user mr-1"></i> 36 Peserta</span>
+                        </div>
+                    </div>
+                    <!-- Tombol di Tab Bank Soal & Ujian -->
+<div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-bold text-gray-200">Daftar Sesi & Bank Soal Ujian</h3>
+    <div class="flex space-x-2">
+        <button onclick="openModal('modal-import-exam')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+            <i class="fa-solid fa-file-excel"></i>
+            <span>Import Soal (CSV)</span>
+        </button>
+        <button onclick="openModal('modal-add-question')" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+            <i class="fa-solid fa-plus"></i>
+            <span>Tambah Soal Baru</span>
+        </button>
+    </div>
+</div>
+                </div>
+            </div>
+
+            <!-- TAB 5: REKAP & LAPORAN -->
+            <div id="tab-reports" class="tab-content hidden space-y-6">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-bold text-gray-200">Hasil & Rekap Integritas Ujian</h3>
+                    <button class="bg-gray-800 border border-gray-700 hover:bg-gray-700 text-gray-200 px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Export Laporan (Excel)</span>
+                    </button>
+                    <!-- Tombol Download / Export Rekap Nilai -->
+<button onclick="downloadReportCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center space-x-2 transition">
+    <i class="fa-solid fa-download"></i>
+    <span>Export Laporan (CSV)</span>
+</button>
+                </div>
+
+                <div class="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+                    <table class="w-full text-left text-sm text-gray-300">
+                        <thead class="bg-gray-900 text-xs uppercase text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="px-6 py-4">Siswa</th>
+                                <th class="px-6 py-4">Kelas</th>
+                                <th class="px-6 py-4">Nilai Ujian</th>
+                                <th class="px-6 py-4">Skor Integritas</th>
+                                <th class="px-6 py-4">Catatan Log Kejadian</th>
+                                <th class="px-6 py-4 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700">
+                            <tr>
+                                <td class="px-6 py-4 font-semibold text-white">Citra Lestari</td>
+                                <td class="px-6 py-4">X DKV</td>
+                                <td class="px-6 py-4 font-bold text-emerald-400">92 / 100</td>
+                                <td class="px-6 py-4 text-emerald-400 font-bold">100% (Bersih)</td>
+                                <td class="px-6 py-4 text-xs text-gray-400">Tidak ada pelanggaran terdeteksi</td>
+                                <td class="px-6 py-4 text-center"><span class="bg-emerald-600/20 text-emerald-400 px-2 py-1 rounded text-xs font-bold">Lulus</span></td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 font-semibold text-white">Budi Santoso</td>
+                                <td class="px-6 py-4">X DKV</td>
+                                <td class="px-6 py-4 font-bold text-amber-400">65 / 100</td>
+                                <td class="px-6 py-4 text-red-400 font-bold">45% (Mencurigakan)</td>
+                                <td class="px-6 py-4 text-xs text-red-400">2x Keluar Tab Browser, 1x Wajah Tidak Terdeteksi</td>
+                                <td class="px-6 py-4 text-center"><span class="bg-red-600/20 text-red-400 px-2 py-1 rounded text-xs font-bold">Ditinjau</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 6: PENGATURAN ANTI-CHEAT -->
+            <div id="tab-settings" class="tab-content hidden space-y-6">
+                <div class="max-w-3xl bg-gray-800 rounded-2xl p-6 border border-gray-700 space-y-6">
+                    <h3 class="text-lg font-bold text-gray-100 border-b border-gray-700 pb-3">Konfigurasi Modul Anti-Mencontek</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                            <div>
+                                <h4 class="font-semibold text-sm text-gray-200">Enforce Fullscreen Mandatory</h4>
+                                <p class="text-xs text-gray-400">Paksa layar penuh selama ujian. Siswa tidak dapat memulai jika belum fullscreen.</p>
+                            </div>
+                            <input type="checkbox" checked class="w-5 h-5 accent-red-600">
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                            <div>
+                                <h4 class="font-semibold text-sm text-gray-200">Deteksi Perpindahan Tab & Window Loss</h4>
+                                <p class="text-xs text-gray-400">Berikan strike otomatis saat fokus jendela browser berpindah.</p>
+                            </div>
+                            <input type="checkbox" checked class="w-5 h-5 accent-red-600">
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                            <div>
+                                <h4 class="font-semibold text-sm text-gray-200">Webcam AI Face Proctoring</h4>
+                                <p class="text-xs text-gray-400">Pantau kehadiran wajah dan deteksi kemunculan orang asing di kamera.</p>
+                            </div>
+                            <input type="checkbox" checked class="w-5 h-5 accent-red-600">
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 bg-gray-900/50 rounded-xl border border-gray-700">
+                            <div>
+                                <h4 class="font-semibold text-sm text-gray-200">Blokir Copy-Paste & Right Click</h4>
+                                <p class="text-xs text-gray-400">Cegah siswa menyalin soal atau membuka inspect element.</p>
+                            </div>
+                            <input type="checkbox" checked class="w-5 h-5 accent-red-600">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex justify-end">
+                        <button onclick="alert('Pengaturan berhasil disimpan!')" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition">Simpan Konfigurasi</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ==================== MODALS AREA ==================== -->
+
+    <!-- MODAL 1: TAMBAH SISWA BARU -->
+    <div id="modal-add-student" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-lg w-full p-6 space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-red-500"></i>
+                    <span>Tambah Siswa Baru</span>
+                </h3>
+                <button onclick="closeModal('modal-add-student')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <form id="form-add-student" onsubmit="handleAddStudent(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Nama Lengkap Siswa</label>
+                    <input type="text" id="input-student-name" required placeholder="Contoh: Andi Wijaya" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 font-medium mb-1">NISN / ID Siswa</label>
+                        <input type="text" id="input-student-nisn" required placeholder="0051234567" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 font-medium mb-1">Pilih Kelas</label>
+                        <select id="input-student-class" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                            <option value="XII IPA 1">XII IPA 1</option>
+                            <option value="XII IPA 2">XII IPA 2</option>
+                            <option value="XII IPS 1">XII IPS 1</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Username Login Siswa</label>
+                    <input type="text" id="input-student-username" required placeholder="andi_xii_ipa1" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-red-500">
+                </div>
+
+                <div class="pt-3 flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('modal-add-student')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-semibold text-gray-300">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-xs font-semibold text-white">Simpan Data Siswa</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: IMPORT EXCEL / CSV SISWA -->
+    <div id="modal-import-student" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-md w-full p-6 space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv text-emerald-500"></i>
+                    <span>Import Bulk Siswa (CSV/Excel)</span>
+                </h3>
+                <button onclick="closeModal('modal-import-student')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="space-y-4">
+                <p class="text-xs text-gray-400">Unggah file CSV berisi data siswa sesuai dengan format template resmi.</p>
+                
+                <div class="border-2 border-dashed border-gray-600 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer bg-gray-900/50 transition">
+                    <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                    <p class="text-xs text-gray-300 font-medium">Klik atau tarik file CSV ke sini</p>
+                    <span class="text-[10px] text-gray-500 block mt-1">Maksimal ukuran file: 5MB</span>
+                    <input type="file" accept=".csv" class="hidden" id="csv-file-input" onchange="handleCSVUpload(event)">
+                </div>
+
+                <div class="bg-gray-900 p-3 rounded-xl flex items-center justify-between text-xs text-gray-300">
+                    <span>Belum punya formatnya?</span>
+                    <button onclick="downloadCSVTemplate()" class="text-emerald-400 hover:underline font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-download"></i> Unduh Template CSV
+                    </button>
+                </div>
+            </div>
+
+            <div class="pt-3 flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('modal-import-student')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-semibold text-gray-300">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: TAMBAH KELAS BARU -->
+    <div id="modal-add-class" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-md w-full p-6 space-y-5">
+            <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-folder-plus text-blue-500"></i>
+                    <span>Tambah Kelas Baru</span>
+                </h3>
+                <button onclick="closeModal('modal-add-class')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <form id="form-add-class" onsubmit="handleAddClass(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Nama Kelas</label>
+                    <input type="text" id="input-class-name" required placeholder="Contoh: XII IPA 3" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs text-gray-400 font-medium mb-1">Tingkat</label>
+                        <select id="input-class-level" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                            <option value="10">Kelas 10</option>
+                            <option value="11">Kelas 11</option>
+                            <option value="12" selected>Kelas 12</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-400 font-medium mb-1">Jurusan</label>
+                        <select id="input-class-major" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                            <option value="MIPA">IPA (MIPA)</option>
+                            <option value="IPS">IPS</option>
+                            <option value="BAHASA">Bahasa</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Nama Wali Kelas</label>
+                    <input type="text" id="input-class-teacher" placeholder="Drs. Bambang Haryono" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500">
+                </div>
+
+                <div class="pt-3 flex justify-end space-x-3">
+                    <button type="button" onclick="closeModal('modal-add-class')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-semibold text-gray-300">Batal</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 rounded-xl text-xs font-semibold text-white">Simpan Kelas</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: TAMBAH SOAL BARU -->
+<div id="modal-add-question" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-xl w-full p-6 space-y-5">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-red-500"></i>
+                <span>Tambah Soal Ujian Baru</span>
+            </h3>
+            <button onclick="closeModal('modal-add-question')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <form id="form-add-question" onsubmit="handleAddQuestion(event)" class="space-y-4">
+            <div>
+                <label class="block text-xs text-gray-400 font-medium mb-1">Pertanyaan / Soal</label>
+                <textarea id="input-q-text" rows="3" required placeholder="Tuliskan pertanyaan soal di sini..." class="w-full bg-gray-900 border border-gray-700 rounded-xl p-3 text-sm text-gray-200 focus:outline-none focus:border-red-500"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Pilihan A</label>
+                    <input type="text" id="input-opt-a" required placeholder="Jawaban A" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Pilihan B</label>
+                    <input type="text" id="input-opt-b" required placeholder="Jawaban B" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Pilihan C</label>
+                    <input type="text" id="input-opt-c" required placeholder="Jawaban C" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500">
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Pilihan D</label>
+                    <input type="text" id="input-opt-d" required placeholder="Jawaban D" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Kunci Jawaban Benar</label>
+                    <select id="input-q-correct" class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500">
+                        <option value="A">Pilihan A</option>
+                        <option value="B">Pilihan B</option>
+                        <option value="C">Pilihan C</option>
+                        <option value="D">Pilihan D</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs text-gray-400 font-medium mb-1">Bobot / Poin</label>
+                    <input type="number" id="input-q-score" value="4" required class="w-full bg-gray-900 border border-gray-700 rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-red-500">
+                </div>
+            </div>
+
+            <div class="pt-3 flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('modal-add-question')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-semibold text-gray-300">Batal</button>
+                <button type="submit" class="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-xl text-xs font-semibold text-white">Simpan Soal</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 5: IMPORT BANK SOAL -->
+<div id="modal-import-exam" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-gray-800 border border-gray-700 rounded-2xl max-w-md w-full p-6 space-y-5">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-3">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-file-excel text-emerald-500"></i>
+                <span>Import Bank Soal (CSV)</span>
+            </h3>
+            <button onclick="closeModal('modal-import-exam')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <div class="space-y-4">
+            <p class="text-xs text-gray-400">Unggah file CSV berisi bank soal sesuai dengan format standar CBT.</p>
+            
+            <div class="border-2 border-dashed border-gray-600 hover:border-emerald-500 rounded-2xl p-6 text-center cursor-pointer bg-gray-900/50 transition" onclick="document.getElementById('exam-csv-input').click()">
+                <i class="fa-solid fa-cloud-arrow-up text-3xl text-gray-400 mb-2"></i>
+                <p class="text-xs text-gray-300 font-medium">Klik untuk Pilih File Soal (.CSV)</p>
+                <input type="file" accept=".csv" class="hidden" id="exam-csv-input" onchange="handleExamCSVUpload(event)">
+            </div>
+
+            <div class="bg-gray-900 p-3 rounded-xl flex items-center justify-between text-xs text-gray-300">
+                <span>Belum memiliki template?</span>
+                <button onclick="downloadExamCSVTemplate()" class="text-emerald-400 hover:underline font-semibold flex items-center gap-1">
+                    <i class="fa-solid fa-download"></i> Unduh Template Soal
+                </button>
+            </div>
+        </div>
+
+        <div class="pt-3 flex justify-end space-x-3">
+            <button type="button" onclick="closeModal('modal-import-exam')" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-xl text-xs font-semibold text-gray-300">Tutup</button>
+        </div>
+    </div>
+</div>
+
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        // --- DATA STATE AWAL ---
+        let studentsData = [
+            { id: '0051234501', name: 'Ahmad Rizky Pratama', class: 'XII IPA 1', username: 'ahmad_rizky', status: 'Aktif' },
+            { id: '0051234502', name: 'Budi Santoso', class: 'XII IPA 2', username: 'budi_santoso', status: 'Aktif' },
+            { id: '0051234503', name: 'Citra Lestari', class: 'XII IPS 1', username: 'citra_lestari', status: 'Aktif' },
+            { id: '0051234504', name: 'Dwi Cahyono', class: 'XII IPA 1', username: 'dwi_cahyono', status: 'Aktif' },
+            { id: '0051234505', name: 'Eka Putri Rahayu', class: 'XII IPA 2', username: 'eka_putri', status: 'Nonaktif' }
+        ];
+
+        let classesData = [
+            { name: 'XII IPA 1', level: '12', major: 'MIPA', teacher: 'Siti Aminah, S.Pd', total: 36 },
+            { name: 'XII IPA 2', level: '12', major: 'MIPA', teacher: 'Drs. Bambang Haryono', total: 34 },
+            { name: 'XII IPS 1', level: '12', major: 'IPS', teacher: 'Rina Wijaya, M.Pd', total: 35 }
+        ];
+
+        // --- NAVIGATION TABS ---
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Remove active classes on nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-400 hover:bg-gray-700/50 hover:text-gray-200 transition";
+            });
+
+            // Show current tab content & activate button
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`nav-${tabName}`);
+            if(activeBtn) {
+                activeBtn.className = "nav-btn w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition bg-red-600/20 text-red-400 border border-red-500/30";
+            }
+
+            // Update Header Titles
+            const titles = {
+                'dashboard': ['Overview & Analitik Ujian', 'Pemantauan real-time status integritas dan jalannya tes.'],
+                'students': ['Manajemen Siswa & Kelas', 'Kelola pendaftaran siswa, import data massal, dan alokasi kelas.'],
+                'monitoring': ['Live Camera & Anti-Cheat Monitor', 'Pantau feeds kamera siswa & log kecurangan secara langsung.'],
+                'exams': ['Bank Soal & Penjadwalan Ujian', 'Kelola daftar ujian, pilihan ganda, dan token token akses.'],
+                'reports': ['Rekap Nilai & Skor Integritas', 'Laporan lengkap kejujuran siswa serta riwayat log kejadian.'],
+                'settings': ['Pengaturan Anti-Cheat', 'Konfigurasi batasan keamanan & deteksi kecurangan.']
+            };
+
+            document.getElementById('page-title').innerText = titles[tabName][0];
+            document.getElementById('page-subtitle').innerText = titles[tabName][1];
+        }
+
+        // --- SUB TABS SISWA ---
+        function switchStudentSubTab(subTab) {
+            const btnList = document.getElementById('btn-sub-student-list');
+            const btnClasses = document.getElementById('btn-sub-classes');
+            const tabList = document.getElementById('student-subtab-list');
+            const tabClasses = document.getElementById('student-subtab-classes');
+
+            if(subTab === 'list') {
+                tabList.classList.remove('hidden');
+                tabClasses.classList.add('hidden');
+                btnList.className = "px-4 py-2 rounded-xl text-sm font-semibold bg-red-600 text-white transition";
+                btnClasses.className = "px-4 py-2 rounded-xl text-sm font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition";
+            } else {
+                tabList.classList.add('hidden');
+                tabClasses.classList.remove('hidden');
+                btnClasses.className = "px-4 py-2 rounded-xl text-sm font-semibold bg-red-600 text-white transition";
+                btnList.className = "px-4 py-2 rounded-xl text-sm font-semibold bg-gray-700 text-gray-300 hover:bg-gray-600 transition";
+            }
+        }
+
+        // --- RENDER STUDENTS TABLE ---
+        function renderStudentsTable(data = studentsData) {
+            const tbody = document.getElementById('student-table-body');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Data siswa tidak ditemukan.</td></tr>`;
+                return;
+            }
+
+            data.forEach(s => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-700/30 transition";
+                tr.innerHTML = `
+                    <td class="px-6 py-4 font-semibold text-gray-100 flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-full bg-gray-700 flex items-center justify-center font-bold text-xs text-gray-300">
+                            ${s.name.split(' ').map(n=>n[0]).join('').substring(0,2)}
+                        </div>
+                        <span>${s.name}</span>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-xs text-gray-400">${s.id}</td>
+                    <td class="px-6 py-4"><span class="bg-gray-700 text-gray-300 text-xs px-2.5 py-1 rounded-md font-medium">${s.class}</span></td>
+                    <td class="px-6 py-4 font-mono text-xs text-gray-400">${s.username}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${s.status === 'Aktif' ? 'bg-emerald-600/20 text-emerald-400' : 'bg-gray-700 text-gray-400'}">
+                            ${s.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center space-x-2">
+                            <button onclick="deleteStudent('${s.id}')" class="text-gray-400 hover:text-red-400 p-1 transition" title="Hapus Siswa">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('stat-total-students').innerText = studentsData.length;
+        }
+
+        // --- FILTER STUDENTS ---
+        function filterStudents() {
+            const searchVal = document.getElementById('search-student').value.toLowerCase();
+            const classVal = document.getElementById('filter-class').value;
+            const statusVal = document.getElementById('filter-status').value;
+
+            const filtered = studentsData.filter(s => {
+                const matchSearch = s.name.toLowerCase().includes(searchVal) || s.id.toLowerCase().includes(searchVal);
+                const matchClass = classVal === 'ALL' || s.class === classVal;
+                const matchStatus = statusVal === 'ALL' || s.status === statusVal;
+                return matchSearch && matchClass && matchStatus;
+            });
+
+            renderStudentsTable(filtered);
+        }
+
+        // --- RENDER CLASSES GRID ---
+        function renderClassesGrid() {
+            const grid = document.getElementById('class-grid');
+            grid.innerHTML = '';
+
+            classesData.forEach(c => {
+                const card = document.createElement('div');
+                card.className = "bg-gray-800 rounded-2xl border border-gray-700 p-5 space-y-3 relative overflow-hidden";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-blue-400 bg-blue-600/10 px-2 py-0.5 rounded">Tingkat ${c.level} - ${c.major}</span>
+                            <h4 class="text-xl font-bold text-white mt-1">${c.name}</h4>
+                        </div>
+                        <span class="text-xs bg-gray-900 border border-gray-700 px-3 py-1 rounded-xl text-gray-300 font-semibold">${c.total} Siswa</span>
+                    </div>
+                    <p class="text-xs text-gray-400"><i class="fa-solid fa-user-tie mr-1.5 text-gray-500"></i> Wali Kelas: <span class="text-gray-200 font-medium">${c.teacher}</span></p>
+                    <div class="pt-2 border-t border-gray-700/60 flex justify-between items-center text-xs">
+                        <button onclick="filterStudentsByClass('${c.name}')" class="text-blue-400 hover:underline font-semibold">Lihat Siswa →</button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterStudentsByClass(className) {
+            switchStudentSubTab('list');
+            document.getElementById('filter-class').value = className;
+            filterStudents();
+        }
+
+        // --- MODAL CONTROLS ---
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        // --- FORM HANDLERS ---
+        function handleAddStudent(e) {
+            e.preventDefault();
+            const name = document.getElementById('input-student-name').value;
+            const nisn = document.getElementById('input-student-nisn').value;
+            const sClass = document.getElementById('input-student-class').value;
+            const username = document.getElementById('input-student-username').value;
+
+            studentsData.unshift({
+                id: nisn,
+                name: name,
+                class: sClass,
+                username: username,
+                status: 'Aktif'
+            });
+
+            renderStudentsTable();
+            closeModal('modal-add-student');
+            document.getElementById('form-add-student').reset();
+            alert('Siswa berhasil ditambahkan!');
+        }
+
+        function handleAddClass(e) {
+            e.preventDefault();
+            const name = document.getElementById('input-class-name').value;
+            const level = document.getElementById('input-class-level').value;
+            const major = document.getElementById('input-class-major').value;
+            const teacher = document.getElementById('input-class-teacher').value || 'Belum Ditentukan';
+
+            classesData.push({
+                name: name,
+                level: level,
+                major: major,
+                teacher: teacher,
+                total: 0
+            });
+
+            renderClassesGrid();
+            closeModal('modal-add-class');
+            document.getElementById('form-add-class').reset();
+            alert('Kelas baru berhasil ditambahkan!');
+        }
+
+        function deleteStudent(id) {
+            if(confirm('Apakah Anda yakin ingin menghapus siswa ini?')) {
+                studentsData = studentsData.filter(s => s.id !== id);
+                renderStudentsTable();
+            }
+        }
+
+        function downloadCSVTemplate() {
+            const csvContent = "data:text/csv;charset=utf-8,NISN,Nama Lengkap,Kelas,Username\n0051234599,Contoh Siswa,XII IPA 1,contoh_siswa";
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "template_siswa_cbt.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function handleCSVUpload(e) {
+            alert('File CSV berhasil diunggah! Data siswa telah di-import.');
+            closeModal('modal-import-student');
+        }
+
+        // --- INITIALIZATION & CHARTS ---
+        window.onload = function() {
+            renderStudentsTable();
+            renderClassesGrid();
+
+            // Chart 1: Score Distribution Bar Chart
+            const ctxScore = document.getElementById('scoreChart').getContext('2d');
+            new Chart(ctxScore, {
+                type: 'bar',
+                data: {
+                    labels: ['< 60 (D)', '60-70 (C)', '71-85 (B)', '86-100 (A)'],
+                    datasets: [{
+                        label: 'Jumlah Siswa',
+                        data: [4, 12, 65, 39],
+                        backgroundColor: '#ef4444',
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { ticks: { color: '#9ca3af' }, grid: { color: '#374151' } },
+                        x: { ticks: { color: '#9ca3af' }, grid: { display: false } }
+                    }
+                }
+            });
+
+            // Chart 2: Violation Doughnut Chart
+            const ctxViolation = document.getElementById('violationChart').getContext('2d');
+            new Chart(ctxViolation, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Switch Tab / Window Loss', 'Wajah Tak Terlihat', 'Multiple Face Detected', 'Copy-Paste Try'],
+                    datasets: [{
+                        data: [5, 2, 1, 3],
+                        backgroundColor: ['#f59e0b', '#ef4444', '#3b82f6', '#10b981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: '#9ca3af', font: { size: 10 } } }
+                    }
+                }
+            });
+        };
+        // --- LOGIK MANAJEMEN BANK SOAL & IMPORT/EXPORT ---
+
+// Array penampung data soal
+let questionBank = [];
+
+// 1. Handler Tambah Soal Manual
+function handleAddQuestion(e) {
+    e.preventDefault();
+    const qText = document.getElementById('input-q-text').value;
+    const optA = document.getElementById('input-opt-a').value;
+    const optB = document.getElementById('input-opt-b').value;
+    const optC = document.getElementById('input-opt-c').value;
+    const optD = document.getElementById('input-opt-d').value;
+    const correct = document.getElementById('input-q-correct').value;
+    const score = document.getElementById('input-q-score').value;
+
+    questionBank.push({
+        id: Date.now(),
+        question: qText,
+        options: { A: optA, B: optB, C: optC, D: optD },
+        correct: correct,
+        score: parseInt(score)
+    });
+
+    closeModal('modal-add-question');
+    document.getElementById('form-add-question').reset();
+    alert(`Berhasil menambahkan 1 soal baru! Total Soal Tersimpan: ${questionBank.length}`);
+}
+
+// 2. Handler Import Bank Soal CSV
+function handleExamCSVUpload(e) {
+    const file = e.target.files[0];
+    if (file) {
+        alert(`File "${file.name}" berhasil diunggah! Soal berhasil di-import ke bank soal.`);
+        closeModal('modal-import-exam');
+    }
+}
+
+// 3. Download Template CSV Soal
+function downloadExamCSVTemplate() {
+    const csvContent = "data:text/csv;charset=utf-8,No,Soal,Pilihan_A,Pilihan_B,Pilihan_C,Pilihan_D,Kunci,Bobot\n1,Berapa hasil dari 5 + 5?,8,10,12,15,B,4";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "template_bank_soal_cbt.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// 4. Download / Export Rekap Nilai & Integritas Ujian
+function downloadReportCSV() {
+    const reportData = [
+        ["Nama Siswa", "Kelas", "Nilai Ujian", "Skor Integritas", "Catatan Pelanggaran", "Status"],
+        ["Citra Lestari", "XII IPS 1", "92", "100%", "Tidak ada pelanggaran", "Lulus"],
+        ["Budi Santoso", "XII IPA 2", "65", "45%", "2x Keluar Tab, 1x Wajah Tak Terlihat", "Ditinjau"],
+        ["Ahmad Rizky Pratama", "XII IPA 1", "88", "98%", "Tidak ada pelanggaran", "Lulus"],
+        ["Dwi Cahyono", "XII IPA 1", "78", "85%", "1x Keluar Tab", "Lulus"]
+    ];
+
+    let csvContent = "data:text/csv;charset=utf-8,";
+    reportData.forEach(rowArray => {
+        let row = rowArray.join(",");
+        csvContent += row + "\r\n";
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "laporan_hasil_ujian_cbt.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+    </script>
+</body>
+</html>
